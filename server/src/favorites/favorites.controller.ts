@@ -16,7 +16,10 @@ import {
 
 import { FavoritesService } from './favorites.service';
 import { PaginationDto } from 'src/common/pagination/pagination.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Favorites')
+@ApiBearerAuth('access-token')
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class FavoritesController {

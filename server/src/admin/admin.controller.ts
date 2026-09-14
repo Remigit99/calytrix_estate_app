@@ -13,7 +13,11 @@ import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { AdminService } from './admin.service';
 import { UpdatePropertyDto } from 'src/properties/dto/update-property.dto';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags('Admin')
+@ApiBearerAuth('access-token')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)

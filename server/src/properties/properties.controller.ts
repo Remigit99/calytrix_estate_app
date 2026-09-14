@@ -26,7 +26,9 @@ import { UpdatePropertyDto } from './dto/update-property.dto';
 import { CreatePropertyImageDto } from './dto/create-property-image.dto';
 import { UpdatePropertyImageDto } from './dto/update-property-image.dto';
 import { PropertiesService } from './properties.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Properties')
 @Controller('properties')
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}

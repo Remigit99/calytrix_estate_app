@@ -17,13 +17,14 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { CurrentUser, type JwtUser } from './decorators/current-user.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
 // type AuthenticatedRequest = Request & {
 //   user: {
 //     id: string;
 //   };
 // };
-
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
