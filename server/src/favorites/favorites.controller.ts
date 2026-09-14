@@ -1,0 +1,43 @@
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import {
+  CurrentUser,
+  type JwtUser,
+} from '../auth/decorators/current-user.decorator';
+
+import { FavoritesService } from './favorites.service';
+
+@Controller()
+@UseGuards(JwtAuthGuard)
+export class FavoritesController {
+  constructor(private readonly favoritesService: FavoritesService) {}
+
+  @Get('users/me/favorites')
+  getUserFavorites(@CurrentUser() user: JwtUser) {
+    return this.favoritesService.getUserFavorites(user.id);
+  }
+
+  @Post('properties/:propertyId/favorite')
+  addFavorite(
+    @CurrentUser() user: JwtUser,
+    @Param('propertyId') propertyId: string,
+  ) {
+    return this.favoritesService.addFavorite(user.id, propertyId);
+  }
+
+  @Delete('properties/:propertyId/favorite')
+  removeFavorite(
+    @CurrentUser() user: JwtUser,
+    @Param('propertyId') propertyId: string,
+  ) {
+    return this.favoritesService.removeFavorite(user.id, propertyId);
+  }
+}
