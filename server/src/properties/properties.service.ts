@@ -9,10 +9,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Availability, ListingStatus, Role } from '../generated/prisma/enums';
 
 import { CreatePropertyDto } from './dto/create-property.dto';
-import { PropertyQueryDto } from './dto/property-query.dto';
+import {
+  PropertyQueryDto,
+  PropertySortBy,
+  SortOrder,
+} from './dto/property-query.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { UpdatePropertyImageDto } from './dto/update-property-image.dto';
 import { CreatePropertyImageDto } from './dto/create-property-image.dto';
+import {
+  getPagination,
+  getPaginationMeta,
+} from 'src/common/pagination/pagination.utils';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class PropertiesService {
@@ -72,20 +81,28 @@ export class PropertiesService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 12;
 
-    const where = {
+    if (
+      query.minPrice !== undefined &&
+      query.maxPrice !== undefined &&
+      Number(query.minPrice) > Number(query.maxPrice)
+    ) {
+      throw new BadRequestException('minPrice cannot be greater than maxPrice');
+    }
+
+    const where: Prisma.PropertyWhereInput = {
       listingStatus: ListingStatus.PUBLISHED,
 
       ...(query.city && {
         city: {
           contains: query.city.trim(),
-          mode: 'insensitive' as const,
+          mode: 'insensitive',
         },
       }),
 
       ...(query.state && {
         state: {
           contains: query.state.trim(),
-          mode: 'insensitive' as const,
+          mode: 'insensitive',
         },
       }),
 
@@ -103,30 +120,34 @@ export class PropertiesService {
         },
       }),
 
-      ...((query.minPrice || query.maxPrice) && {
+      ...((query.minPrice !== undefined || query.maxPrice !== undefined) && {
         price: {
-          ...(query.minPrice && {
-            gte: query.minPrice,
+          ...(query.minPrice !== undefined && {
+            gte: new Prisma.Decimal(query.minPrice),
           }),
-
-          ...(query.maxPrice && {
-            lte: query.maxPrice,
+          ...(query.maxPrice !== undefined && {
+            lte: new Prisma.Decimal(query.maxPrice),
           }),
         },
       }),
     };
 
+    const sortBy = query.sortBy ?? PropertySortBy.CREATED_AT;
+    const sortOrder = query.sortOrder ?? SortOrder.DESC;
+
     const orderBy = {
-      [query.sortBy ?? 'createdAt']: query.sortOrder ?? 'desc',
+      [sortBy]: sortOrder,
     };
 
-    const [properties, total] = await this.prisma.$transaction([
+    const { skip, take } = getPagination(page, limit);
+
+    const [data, total] = await Promise.all([
       this.prisma.property.findMany({
         where,
-        include: this.propertyInclude,
+        skip,
+        take,
         orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
+        include: this.propertyInclude,
       }),
 
       this.prisma.property.count({
@@ -135,13 +156,8 @@ export class PropertiesService {
     ]);
 
     return {
-      data: properties,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data,
+      meta: getPaginationMeta(page, limit, total),
     };
   }
 

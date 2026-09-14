@@ -1,4 +1,15 @@
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  Min,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { PropertyType, Purpose } from '../../generated/prisma/enums';
@@ -38,10 +49,12 @@ export class PropertyQueryDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^\d+(\.\d{1,2})?$/)
   minPrice?: string;
 
   @IsOptional()
   @IsString()
+  @Matches(/^\d+(\.\d{1,2})?$/)
   maxPrice?: string;
 
   @IsOptional()
@@ -56,12 +69,12 @@ export class PropertyQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  page?: number;
+  page = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
-  limit?: number;
+  limit = 12;
 }

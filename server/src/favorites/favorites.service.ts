@@ -5,6 +5,11 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  getPagination,
+  getPaginationMeta,
+} from 'src/common/pagination/pagination.utils';
+import { PaginationDto } from 'src/common/pagination/pagination.dto';
 
 @Injectable()
 export class FavoritesService {
@@ -97,38 +102,58 @@ export class FavoritesService {
     };
   }
 
-  async getUserFavorites(userId: string) {
-    return this.prisma.favorite.findMany({
-      where: {
-        userId,
-        property: {
-          listingStatus: {
-            not: 'ARCHIVED',
-          },
+  async getUserFavorites(userId: string, query: PaginationDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where = {
+      userId,
+      property: {
+        listingStatus: {
+          not: 'ARCHIVED' as const,
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        property: {
-          include: {
-            images: {
-              orderBy: {
-                position: 'asc',
+    };
+
+    const { skip, take } = getPagination(page, limit);
+
+    const [data, total] = await Promise.all([
+      this.prisma.favorite.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          property: {
+            include: {
+              images: {
+                orderBy: {
+                  position: 'asc',
+                },
               },
-            },
-            agent: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                phone: true,
+              agent: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  phone: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+
+      this.prisma.favorite.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data,
+      meta: getPaginationMeta(page, limit, total),
+    };
   }
 }

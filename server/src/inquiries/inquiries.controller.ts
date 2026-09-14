@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -20,6 +21,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateInquiryDto } from './dto/create-inquiry.dto';
 import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 import { InquiriesService } from './inquiries.service';
+import { PaginationDto } from 'src/common/pagination/pagination.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
@@ -39,16 +41,27 @@ export class InquiriesController {
     );
   }
 
+  // @Get('users/me/inquiries')
+  // getUserInquiries(@CurrentUser() user: JwtUser) {
+  //   return this.inquiriesService.getUserInquiries(user.id);
+  // }
+
   @Get('users/me/inquiries')
-  getUserInquiries(@CurrentUser() user: JwtUser) {
-    return this.inquiriesService.getUserInquiries(user.id);
+  getUserInquiries(
+    @CurrentUser() user: JwtUser,
+    @Query() query: PaginationDto,
+  ) {
+    return this.inquiriesService.getUserInquiries(user.id, query);
   }
 
   @Get('agent/inquiries')
   @UseGuards(RolesGuard)
   @Roles(Role.AGENT)
-  getAgentInquiries(@CurrentUser() user: JwtUser) {
-    return this.inquiriesService.getAgentInquiries(user.id);
+  getAgentInquiries(
+    @CurrentUser() user: JwtUser,
+    @Query() query: PaginationDto,
+  ) {
+    return this.inquiriesService.getAgentInquiries(user.id, query);
   }
 
   @Patch('inquiries/:id')
@@ -70,7 +83,7 @@ export class InquiriesController {
   @Get('admin/inquiries')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  getAdminInquiries() {
-    return this.inquiriesService.getAdminInquiries();
+  getAdminInquiries(@Query() query: PaginationDto) {
+    return this.inquiriesService.getAdminInquiries(query);
   }
 }

@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -14,15 +15,24 @@ import {
 } from '../auth/decorators/current-user.decorator';
 
 import { FavoritesService } from './favorites.service';
+import { PaginationDto } from 'src/common/pagination/pagination.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
+  // @Get('users/me/favorites')
+  // getUserFavorites(@CurrentUser() user: JwtUser) {
+  //   return this.favoritesService.getUserFavorites(user.id);
+  // }
+
   @Get('users/me/favorites')
-  getUserFavorites(@CurrentUser() user: JwtUser) {
-    return this.favoritesService.getUserFavorites(user.id);
+  getUserFavorites(
+    @CurrentUser() user: JwtUser,
+    @Query() query: PaginationDto,
+  ) {
+    return this.favoritesService.getUserFavorites(user.id, query);
   }
 
   @Post('properties/:propertyId/favorite')

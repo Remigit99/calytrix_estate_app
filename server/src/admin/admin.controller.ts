@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -12,6 +12,7 @@ import { Role } from '../generated/prisma/enums';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { AdminService } from './admin.service';
 import { UpdatePropertyDto } from 'src/properties/dto/update-property.dto';
+import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,8 +26,8 @@ export class AdminController {
   }
 
   @Get('users')
-  getUsers() {
-    return this.adminService.getUsers();
+  getUsers(@Query() query: AdminUserQueryDto) {
+    return this.adminService.getUsers(query);
   }
 
   @Get('users/:id')

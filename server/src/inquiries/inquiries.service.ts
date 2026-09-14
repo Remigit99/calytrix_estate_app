@@ -12,6 +12,11 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 
 import { UpdateInquiryDto } from './dto/update-inquiry.dto';
+import {
+  getPagination,
+  getPaginationMeta,
+} from 'src/common/pagination/pagination.utils';
+import { PaginationDto } from 'src/common/pagination/pagination.dto';
 
 @Injectable()
 export class InquiriesService {
@@ -52,39 +57,130 @@ export class InquiriesService {
     });
   }
 
-  async getUserInquiries(userId: string) {
-    return this.prisma.inquiry.findMany({
-      where: {
-        senderId: userId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: this.inquiryInclude,
-    });
-  }
+  // async getUserInquiries(userId: string) {
+  //   return this.prisma.inquiry.findMany({
+  //     where: {
+  //       senderId: userId,
+  //     },
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //     include: this.inquiryInclude,
+  //   });
+  // }
 
-  async getAgentInquiries(agentId: string) {
-    return this.prisma.inquiry.findMany({
-      where: {
-        property: {
-          agentId,
+  async getUserInquiries(userId: string, query: PaginationDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where = {
+      senderId: userId,
+    };
+
+    const { skip, take } = getPagination(page, limit);
+
+    const [data, total] = await Promise.all([
+      this.prisma.inquiry.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdAt: 'desc',
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: this.inquiryInclude,
-    });
+        include: this.inquiryInclude,
+      }),
+
+      this.prisma.inquiry.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data,
+      meta: getPaginationMeta(page, limit, total),
+    };
   }
 
-  async getAdminInquiries() {
-    return this.prisma.inquiry.findMany({
-      orderBy: {
-        createdAt: 'desc',
+  // async getAgentInquiries(agentId: string) {
+  //   return this.prisma.inquiry.findMany({
+  //     where: {
+  //       property: {
+  //         agentId,
+  //       },
+  //     },
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //     include: this.inquiryInclude,
+  //   });
+  // }
+
+  async getAgentInquiries(agentId: string, query: PaginationDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where = {
+      property: {
+        agentId,
       },
-      include: this.inquiryInclude,
-    });
+    };
+
+    const { skip, take } = getPagination(page, limit);
+
+    const [data, total] = await Promise.all([
+      this.prisma.inquiry.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: this.inquiryInclude,
+      }),
+
+      this.prisma.inquiry.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data,
+      meta: getPaginationMeta(page, limit, total),
+    };
+  }
+
+  // async getAdminInquiries() {
+  //   return this.prisma.inquiry.findMany({
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //     include: this.inquiryInclude,
+  //   });
+  // }
+
+  async getAdminInquiries(query: PaginationDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const { skip, take } = getPagination(page, limit);
+
+    const [data, total] = await Promise.all([
+      this.prisma.inquiry.findMany({
+        skip,
+        take,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: this.inquiryInclude,
+      }),
+
+      this.prisma.inquiry.count(),
+    ]);
+
+    return {
+      data,
+      meta: getPaginationMeta(page, limit, total),
+    };
   }
 
   async updateInquiry(

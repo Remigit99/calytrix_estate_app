@@ -10,6 +10,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { PropertiesService } from 'src/properties/properties.service';
 import { UpdatePropertyDto } from 'src/properties/dto/update-property.dto';
+import {
+  getPagination,
+  getPaginationMeta,
+} from 'src/common/pagination/pagination.utils';
+import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 
 @Injectable()
 export class AdminService {
@@ -18,13 +23,47 @@ export class AdminService {
     private readonly propertiesService: PropertiesService,
   ) {}
 
-  async getUsers() {
-    return this.prisma.user.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: this.userSelect,
-    });
+  // async getUsers() {
+  //   return this.prisma.user.findMany({
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //     select: this.userSelect,
+  //   });
+  // }
+
+  async getUsers(query: AdminUserQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where = {
+      ...(query.role && {
+        role: query.role,
+      }),
+    };
+
+    const { skip, take } = getPagination(page, limit);
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: this.userSelect,
+      }),
+
+      this.prisma.user.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data,
+      meta: getPaginationMeta(page, limit, total),
+    };
   }
 
   async getUser(userId: string) {
