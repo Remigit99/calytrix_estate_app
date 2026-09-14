@@ -11,37 +11,60 @@ import { Availability, ListingStatus, Role } from '../generated/prisma/enums';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyQueryDto } from './dto/property-query.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { UpdatePropertyImageDto } from './dto/update-property-image.dto';
+import { CreatePropertyImageDto } from './dto/create-property-image.dto';
 
 @Injectable()
 export class PropertiesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(agentId: string, dto: CreatePropertyDto) {
-    return this.prisma.property.create({
-      data: {
-        title: dto.title.trim(),
-        description: dto.description.trim(),
-        price: dto.price,
-        purpose: dto.purpose,
-        propertyType: dto.propertyType,
-        availability: dto.availability ?? Availability.AVAILABLE,
+    return this.prisma.$transaction(async (tx) => {
+      const property = await tx.property.create({
+        data: {
+          title: dto.title.trim(),
+          description: dto.description.trim(),
+          price: dto.price,
+          purpose: dto.purpose,
+          propertyType: dto.propertyType,
+          availability: dto.availability ?? Availability.AVAILABLE,
 
-        bedrooms: dto.bedrooms,
-        bathrooms: dto.bathrooms,
-        parkingSpaces: dto.parkingSpaces,
+          bedrooms: dto.bedrooms,
+          bathrooms: dto.bathrooms,
+          parkingSpaces: dto.parkingSpaces,
 
-        address: dto.address.trim(),
-        city: dto.city.trim(),
-        state: dto.state.trim(),
-        country: dto.country.trim(),
+          address: dto.address.trim(),
+          city: dto.city.trim(),
+          state: dto.state.trim(),
+          country: dto.country.trim(),
 
-        latitude: dto.latitude,
-        longitude: dto.longitude,
+          latitude: dto.latitude,
+          longitude: dto.longitude,
 
-        agentId,
-      },
+          agentId,
+        },
+      });
 
-      include: this.propertyInclude,
+      if (dto.images?.length) {
+        const hasPrimary = dto.images.some((image) => image.isPrimary === true);
+
+        await tx.propertyImage.createMany({
+          data: dto.images.map((image, index) => ({
+            propertyId: property.id,
+            url: image.url,
+            altText: image.altText?.trim(),
+            position: image.position ?? index,
+            isPrimary: image.isPrimary ?? (!hasPrimary && index === 0),
+          })),
+        });
+      }
+
+      return tx.property.findUniqueOrThrow({
+        where: {
+          id: property.id,
+        },
+        include: this.propertyInclude,
+      });
     });
   }
 
@@ -394,4 +417,155 @@ export class PropertiesService {
       },
     },
   } as const;
+
+  async addImage(
+    propertyId: string,
+    actorId: string,
+    actorRole: Role,
+    dto: CreatePropertyImageDto,
+  ) {
+    const property = await this.getProperty(propertyId);
+
+    this.assertCanManage(property.agentId, actorId, actorRole);
+
+    if (dto.isPrimary) {
+      await this.prisma.propertyImage.updateMany({
+        where: {
+          propertyId,
+          isPrimary: true,
+        },
+        data: {
+          isPrimary: false,
+        },
+      });
+    }
+
+    return this.prisma.propertyImage.create({
+      data: {
+        propertyId,
+        url: dto.url,
+        altText: dto.altText?.trim(),
+        position: dto.position ?? 0,
+        isPrimary: dto.isPrimary ?? false,
+      },
+    });
+  }
+
+  async updateImage(
+    propertyId: string,
+    imageId: string,
+    actorId: string,
+    actorRole: Role,
+    dto: UpdatePropertyImageDto,
+  ) {
+    const property = await this.getProperty(propertyId);
+
+    this.assertCanManage(property.agentId, actorId, actorRole);
+
+    const image = await this.prisma.propertyImage.findFirst({
+      where: {
+        id: imageId,
+        propertyId,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Property image not found');
+    }
+
+    if (dto.isPrimary) {
+      await this.prisma.propertyImage.updateMany({
+        where: {
+          propertyId,
+          isPrimary: true,
+          id: {
+            not: imageId,
+          },
+        },
+        data: {
+          isPrimary: false,
+        },
+      });
+    }
+
+    return this.prisma.propertyImage.update({
+      where: {
+        id: imageId,
+      },
+      data: {
+        ...(dto.url !== undefined && {
+          url: dto.url,
+        }),
+
+        ...(dto.altText !== undefined && {
+          altText: dto.altText.trim(),
+        }),
+
+        ...(dto.position !== undefined && {
+          position: dto.position,
+        }),
+
+        ...(dto.isPrimary !== undefined && {
+          isPrimary: dto.isPrimary,
+        }),
+      },
+    });
+  }
+
+  async deleteImage(
+    propertyId: string,
+    imageId: string,
+    actorId: string,
+    actorRole: Role,
+  ) {
+    const property = await this.getProperty(propertyId);
+
+    this.assertCanManage(property.agentId, actorId, actorRole);
+
+    const image = await this.prisma.propertyImage.findFirst({
+      where: {
+        id: imageId,
+        propertyId,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Property image not found');
+    }
+
+    await this.prisma.propertyImage.delete({
+      where: {
+        id: imageId,
+      },
+    });
+
+    return {
+      message: 'Property image deleted successfully',
+    };
+  }
+
+  async findImages(propertyId: string) {
+    const property = await this.prisma.property.findUnique({
+      where: {
+        id: propertyId,
+      },
+      select: {
+        id: true,
+        listingStatus: true,
+      },
+    });
+
+    if (!property || property.listingStatus === ListingStatus.ARCHIVED) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return this.prisma.propertyImage.findMany({
+      where: {
+        propertyId,
+      },
+      orderBy: {
+        position: 'asc',
+      },
+    });
+  }
 }

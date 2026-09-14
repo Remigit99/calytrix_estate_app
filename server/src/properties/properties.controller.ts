@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Delete,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -22,6 +23,8 @@ import { Role } from '../generated/prisma/enums';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyQueryDto } from './dto/property-query.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { CreatePropertyImageDto } from './dto/create-property-image.dto';
+import { UpdatePropertyImageDto } from './dto/update-property-image.dto';
 import { PropertiesService } from './properties.service';
 
 @Controller('properties')
@@ -75,5 +78,50 @@ export class PropertiesController {
   @Roles(Role.AGENT, Role.ADMIN)
   restore(@Param('id') id: string, @CurrentUser() user: JwtUser) {
     return this.propertiesService.restore(id, user.id, user.role);
+  }
+
+  @Get(':id/images')
+  findImages(@Param('id') id: string) {
+    return this.propertiesService.findImages(id);
+  }
+
+  @Post(':id/images')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.AGENT, Role.ADMIN)
+  addImage(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+    @Body() dto: CreatePropertyImageDto,
+  ) {
+    return this.propertiesService.addImage(id, user.id, user.role, dto);
+  }
+
+  @Patch(':id/images/:imageId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.AGENT, Role.ADMIN)
+  updateImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @CurrentUser() user: JwtUser,
+    @Body() dto: UpdatePropertyImageDto,
+  ) {
+    return this.propertiesService.updateImage(
+      id,
+      imageId,
+      user.id,
+      user.role,
+      dto,
+    );
+  }
+
+  @Delete(':id/images/:imageId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.AGENT, Role.ADMIN)
+  deleteImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.propertiesService.deleteImage(id, imageId, user.id, user.role);
   }
 }

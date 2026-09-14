@@ -7,7 +7,12 @@ import {
   Length,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+
+import { Type } from 'class-transformer';
+
+import { CreatePropertyImageDto } from './create-property-image.dto';
 
 import {
   Availability,
@@ -75,4 +80,9 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsDecimal()
   longitude?: string;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePropertyImageDto)
+  images?: CreatePropertyImageDto[];
 }
