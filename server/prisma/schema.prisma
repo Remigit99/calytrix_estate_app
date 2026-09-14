@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  AGENT
+  ADMIN
+}
+
+enum Purpose {
+  SALE
+  RENT
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  DUPLEX
+  LAND
+  COMMERCIAL
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Availability {
+  AVAILABLE
+  SOLD
+  RENTED
+}
+
+enum InquiryStatus {
+  PENDING
+  CONTACTED
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  properties      Property[]
+  favorites       Favorite[]
+  inquiries       Inquiry[]        @relation("InquirySender")
+  refreshSessions RefreshSession[]
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model Property {
+  id            String        @id @default(uuid())
+  title         String
+  description   String
+  price         Decimal       @db.Decimal(15, 2)
+  purpose       Purpose
+  propertyType  PropertyType
+  listingStatus ListingStatus @default(DRAFT)
+  availability  Availability  @default(AVAILABLE)
+  bedrooms      Int?
+  bathrooms     Int?
+  parkingSpaces Int?
+  address       String
+  city          String
+  state         String
+  country       String
+  latitude      Decimal?      @db.Decimal(10, 7)
+  longitude     Decimal?      @db.Decimal(10, 7)
+  agentId       String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  agent     User            @relation(fields: [agentId], references: [id])
+  images    PropertyImage[]
+  favorites Favorite[]
+  inquiries Inquiry[]
+  amenities Amenity[]
+
+  @@index([listingStatus])
+  @@index([purpose])
+  @@index([propertyType])
+  @@index([availability])
+  @@index([city])
+  @@index([state])
+  @@index([agentId])
+  @@index([createdAt])
+  @@index([listingStatus, purpose])
+  @@index([listingStatus, city])
+  @@index([listingStatus, propertyType])
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid())
+  propertyId String
+  url        String
+  altText    String?
+  position   Int      @default(0)
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([propertyId, position])
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([propertyId])
+}
+
+model Inquiry {
+  id         String        @id @default(uuid())
+  propertyId String
+  senderId   String
+  message    String
+  status     InquiryStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  sender   User     @relation("InquirySender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([senderId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RefreshSession {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Amenity {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  properties Property[]
+}
