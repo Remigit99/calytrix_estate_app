@@ -13,11 +13,8 @@ import { PropertiesModule } from './properties/properties.module';
     }),
 
     PrismaModule,
-
     AuthModule,
-
     UsersModule,
-
     PropertiesModule,
   ],
 })
