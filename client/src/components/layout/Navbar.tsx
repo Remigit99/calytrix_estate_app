@@ -1,98 +1,162 @@
-import { Heart, Menu, User } from 'lucide-react';
-import { Link, NavLink } from 'react-router';
 
-import { Button } from '../ui';
+import { Heart, Menu, UserRound, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router';
+
+import { Container } from '../ui';
 
 const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-50 border-b border-(--color-border) bg-(--color-surface)/95 backdrop-blur">
-      <div className="container-page">
-        <div className="flex h-16 items-center justify-between">
+    <header className="absolute inset-x-0 top-0 z-50">
+      <Container>
+        <nav className="relative flex h-20 items-center justify-between border-b border-white/15">
           {/* Brand */}
           <Link
             to="/"
-            className="shrink-0 text-lg font-semibold tracking-tight text-(--color-text)"
+            onClick={closeMenu}
+            className="relative z-10 text-xl font-semibold tracking-[-0.03em] text-white"
           >
             Calytrix
-            <span className="text-(--color-primary)">.</span>
+            <span className="ml-1 font-normal text-white/60">
+              Estate
+            </span>
           </Link>
 
           {/* Desktop navigation */}
-          <nav className="hidden items-center gap-1 md:flex">
-            <NavItem to="/">
-              Discover
-            </NavItem>
-
-            <NavItem to="/properties">
+          <div className="hidden items-center gap-8 lg:flex">
+            <Link
+              to="/properties"
+              className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+            >
               Properties
-            </NavItem>
+            </Link>
 
-            <NavItem to="/agents">
+            <Link
+              to="/properties"
+              className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+            >
+              Discover
+            </Link>
+
+            <Link
+              to="/agents"
+              className="text-sm font-medium text-white/75 transition-colors hover:text-white"
+            >
               Agents
-            </NavItem>
-          </nav>
+            </Link>
+          </div>
 
           {/* Desktop actions */}
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             <Link
               to="/favorites"
               aria-label="Favorites"
-              className="inline-flex size-10 items-center justify-center rounded-(--radius-control) text-(--color-text-secondary) transition-colors hover:bg-(--color-surface-muted) hover:text-(--color-text)"
+              className="flex size-10 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Heart size={19} strokeWidth={1.8} />
             </Link>
 
             <Link
               to="/login"
-              className="inline-flex h-10 items-center gap-2 rounded-(--radius-control) px-3 text-body-sm font-medium text-(--color-text-secondary) transition-colors hover:bg-(--color-surface-muted) hover:text-(--color-text)"
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <User size={18} strokeWidth={1.8} />
+              <UserRound size={17} strokeWidth={1.8} />
               Sign in
             </Link>
 
-            <Button size="sm">
+            {/* List property */}
+            <Link
+              to="/properties/new"
+              className="ml-1 inline-flex h-10 items-center rounded-full border border-white/35 bg-white/10 px-5 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:border-white/60 hover:bg-white/20"
+            >
               List a property
-            </Button>
+            </Link>
           </div>
 
-          {/* Mobile menu */}
+          {/* Mobile menu button */}
           <button
             type="button"
-            aria-label="Open navigation menu"
-            className="inline-flex size-10 items-center justify-center rounded-(--radius-control) text-(--color-text-secondary) transition-colors hover:bg-(--color-surface-muted) hover:text-(--color-text) md:hidden"
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMenuOpen}
+            onClick={() => setIsMenuOpen((open) => !open)}
+            className="relative z-10 flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/10 text-white backdrop-blur-md transition-colors hover:bg-white/15 lg:hidden"
           >
-            <Menu size={22} strokeWidth={1.8} />
+            {isMenuOpen ? (
+              <X size={21} strokeWidth={1.8} />
+            ) : (
+              <Menu size={21} strokeWidth={1.8} />
+            )}
           </button>
-        </div>
-      </div>
+
+          {/* Mobile menu */}
+          {isMenuOpen && (
+            <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] overflow-hidden rounded-2xl border border-white/20 bg-black/75 p-2 shadow-[0_20px_50px_rgb(0_0_0_/_0.3)] backdrop-blur-xl lg:hidden">
+              <div className="flex flex-col">
+                <Link
+                  to="/properties"
+                  onClick={closeMenu}
+                  className="rounded-xl px-4 py-3.5 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Properties
+                </Link>
+
+                <Link
+                  to="/properties"
+                  onClick={closeMenu}
+                  className="rounded-xl px-4 py-3.5 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Discover
+                </Link>
+
+                <Link
+                  to="/agents"
+                  onClick={closeMenu}
+                  className="rounded-xl px-4 py-3.5 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Agents
+                </Link>
+
+                <Link
+                  to="/favorites"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <Heart size={17} strokeWidth={1.8} />
+                  Favorites
+                </Link>
+
+                <Link
+                  to="/login"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <UserRound size={17} strokeWidth={1.8} />
+                  Sign in
+                </Link>
+
+                <div className="my-2 border-t border-white/10" />
+
+                <Link
+                  to="/properties/new"
+                  onClick={closeMenu}
+                  className="flex h-11 items-center justify-center rounded-xl border border-white/25 bg-white/10 text-sm font-medium text-white transition-colors hover:bg-white/20"
+                >
+                  List a property
+                </Link>
+              </div>
+            </div>
+          )}
+        </nav>
+      </Container>
     </header>
   );
 };
 
-type NavItemProps = {
-  to: string;
-  children: React.ReactNode;
-};
-
-const NavItem = ({ to, children }: NavItemProps) => {
-  return (
-    <NavLink
-      to={to}
-      end={to === '/'}
-      className={({ isActive }) =>
-        [
-          'rounded-(--radius-control) px-3 py-2',
-          'text-body-sm font-medium',
-          'transition-colors duration-200',
-          isActive
-            ? 'bg-(--color-primary-soft) text-(--color-primary)'
-            : 'text-(--color-text-secondary) hover:bg-(--color-surface-muted) hover:text-(--color-text)',
-        ].join(' ')
-      }
-    >
-      {children}
-    </NavLink>
-  );
-};
-
 export default Navbar;
+
