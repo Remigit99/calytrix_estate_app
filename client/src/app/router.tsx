@@ -1,11 +1,17 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 
 import DesignSystemPage from '../pages/public/DesignSystemPage';
+import { PublicLayout } from '../components/layout';
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <DesignSystemPage />,
+ {
+    element: <PublicLayout />,
+    children: [
+      {
+        path: '/',
+        element: <DesignSystemPage />,
+      },
+    ],
   },
   {
     path: '*',
