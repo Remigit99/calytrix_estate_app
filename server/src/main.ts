@@ -17,7 +17,7 @@ const bootstrap = async () => {
 
   const config = new DocumentBuilder()
     .setTitle('Calytrix Estate API')
-    .setDescription('REST API for the Calytrix Estate real estate platform')
+    .setDescription('REST API for the Calytrix Estate Real Estate platform')
     .setVersion('1.0')
     .addBearerAuth(
       {
