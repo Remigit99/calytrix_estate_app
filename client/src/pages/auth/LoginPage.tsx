@@ -10,9 +10,10 @@ import { Button, Input } from '../../components/ui';
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const [login, { isLoading }] =
+  const [  login, { isLoading }] =
     useLoginMutation();
 
+    console.log("data:", login);
   const [form, setForm] = useState({
     email: '',
     password: '',

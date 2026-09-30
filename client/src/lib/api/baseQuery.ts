@@ -10,7 +10,7 @@ import { clearSession, setCredentials, setAccessToken } from '../../features/aut
 
 const baseUrl =
   import.meta.env.VITE_API_URL ??
-  'http://localhost:3000/api/v1';
+  'https://calytrix-estate-app.onrender.com/api/v1/';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl,

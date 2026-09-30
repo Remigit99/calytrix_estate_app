@@ -103,7 +103,7 @@ export class AuthController {
     return {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'lax' as const,
+      sameSite: 'none' as const,
       path: '/api/v1/auth',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     };
