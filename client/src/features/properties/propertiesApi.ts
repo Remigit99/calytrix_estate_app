@@ -1,14 +1,16 @@
 import { api } from '../../lib/api/api';
 import type {
   PropertyListResponse,
+  PropertyPurpose,
+  PropertyType,
 } from './propertyTypes';
 
 export type GetPropertiesParams = {
   page?: number;
   limit?: number;
   search?: string;
-  purpose?: string;
-  propertyType?: string;
+  purpose?: PropertyPurpose;
+  propertyType?: PropertyType;
   city?: string;
   state?: string;
   minPrice?: number;
@@ -18,7 +20,6 @@ export type GetPropertiesParams = {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 };
-
 export const propertyApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getProperties: builder.query<
