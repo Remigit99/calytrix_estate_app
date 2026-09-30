@@ -6,7 +6,7 @@ import {
 } from '@reduxjs/toolkit/query/react';
 
 import type { RootState } from '../../app/store';
-import { clearSession, setCredentials, setAccessToken } from '../../features/auth/authSlice';
+import { clearSession,  setAccessToken } from '../../features/auth/authSlice';
 
 const baseUrl =
   import.meta.env.VITE_API_URL ??

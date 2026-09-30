@@ -13,7 +13,6 @@ const LoginPage = () => {
   const [  login, { isLoading }] =
     useLoginMutation();
 
-    console.log("data:", login);
   const [form, setForm] = useState({
     email: '',
     password: '',

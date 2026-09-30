@@ -1,15 +1,29 @@
 import { api } from '../../lib/api/api';
 import type {
-  PaginatedProperties,
-  Property,
-  PropertyQuery,
-} from '../../types/api';
+  PropertyListResponse,
+} from './propertyTypes';
 
-export const propertiesApi = api.injectEndpoints({
+export type GetPropertiesParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  purpose?: string;
+  propertyType?: string;
+  city?: string;
+  state?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+};
+
+export const propertyApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getProperties: builder.query<
-      PaginatedProperties,
-      PropertyQuery | void
+      PropertyListResponse,
+      GetPropertiesParams | void
     >({
       query: (params) => ({
         url: '/properties',
@@ -18,25 +32,17 @@ export const propertiesApi = api.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ id }) => ({
+              ...result.data.map((property) => ({
                 type: 'Property' as const,
-                id,
+                id: property.id,
               })),
               { type: 'Property' as const, id: 'LIST' },
             ]
           : [{ type: 'Property' as const, id: 'LIST' }],
-    }),
-
-    getProperty: builder.query<Property, string>({
-      query: (id) => `/properties/${id}`,
-      providesTags: (_result, _error, id) => [
-        { type: 'Property', id },
-      ],
     }),
   }),
 });
 
 export const {
   useGetPropertiesQuery,
-  useGetPropertyQuery,
-} = propertiesApi;
+} = propertyApi;
