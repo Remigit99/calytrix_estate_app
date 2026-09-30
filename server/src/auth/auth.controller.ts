@@ -97,12 +97,12 @@ export class AuthController {
   }
 
   private refreshCookieOptions() {
-    const isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
+    // const isProduction =
+    //   this.configService.get<string>('NODE_ENV') === 'production';
 
     return {
       httpOnly: true,
-      secure: isProduction,
+      // secure: isProduction,
       sameSite: 'none' as const,
       path: '/api/v1/auth',
       maxAge: 7 * 24 * 60 * 60 * 1000,
