@@ -1,10 +1,16 @@
-
 import {
   ChevronDown,
   MapPin,
   Search,
   SlidersHorizontal,
 } from 'lucide-react';
+
+import { useState } from 'react';
+
+import type {
+  PropertyPurpose,
+  PropertyType,
+} from '../../features/properties/propertyTypes';
 import { Link } from 'react-router';
 
 import { Button, Container } from '../ui';
@@ -18,11 +24,57 @@ export type HeroProperty = {
   imageAlt: string;
 };
 
-type HeroProps = {
-  property: HeroProperty;
+export type HeroSearchValues = {
+  city: string;
+  purpose: PropertyPurpose | '';
+  propertyType: PropertyType | '';
+  minPrice?: number;
+  maxPrice?: number;
 };
 
-const Hero = ({ property }: HeroProps) => {
+type HeroProps = {
+  property: HeroProperty;
+  onSearch?: (filters: HeroSearchValues) => void;
+};
+
+const Hero = ({ property, onSearch }: HeroProps) => {
+  const [city, setCity] = useState('');
+  const [purpose, setPurpose] =
+    useState<PropertyPurpose | ''>('SALE');
+
+  const [propertyType, setPropertyType] =
+    useState<PropertyType | ''>('');
+
+  const [minPrice, setMinPrice] =
+    useState<number | undefined>();
+
+  const [maxPrice, setMaxPrice] =
+    useState<number | undefined>();
+
+  const handleSearch = () => {
+    onSearch?.({
+      city: city.trim(),
+      purpose,
+      propertyType,
+      minPrice,
+      maxPrice,
+    });
+  };
+
+  const propertyTypeLabel =
+    propertyType === ''
+      ? 'Any type'
+      : propertyType.charAt(0) +
+      propertyType.slice(1).toLowerCase();
+
+  const priceLabel =
+    minPrice === undefined && maxPrice === undefined
+      ? 'Any price'
+      : minPrice === undefined
+        ? `Under ₦${maxPrice / 1_000_000}M`
+        : maxPrice === undefined
+          ? `₦${minPrice / 1_000_000}M+`
+          : `₦${minPrice / 1_000_000}M – ₦${maxPrice / 1_000_000}M`;
   return (
     <section className="relative isolate min-h-[680px] overflow-hidden bg-(--color-neutral-950) sm:min-h-[720px]">
       {/* Background */}
@@ -76,15 +128,21 @@ const Hero = ({ property }: HeroProps) => {
                         Location
                       </p>
 
-                      <button
-                        type="button"
-                        className="mt-1 flex max-w-full items-center gap-1 text-sm font-medium text-(--color-text)"
-                      >
-                        <span className="truncate">
-                          Anywhere
-                        </span>
-                        <ChevronDown size={14} />
-                      </button>
+                      <div className="relative mt-1">
+                        <input
+                          type="text"
+                          value={city}
+                          onChange={(event) => setCity(event.target.value)}
+                          placeholder="Anywhere"
+                          className="w-full bg-transparent pr-5 text-sm font-medium text-(--color-text) outline-none placeholder:text-(--color-text)"
+                        />
+
+                        <ChevronDown
+                          size={14}
+                          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"
+                        />
+                      </div>
+
                     </div>
                   </div>
 
@@ -98,14 +156,28 @@ const Hero = ({ property }: HeroProps) => {
                       <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-(--color-text-muted)">
                         Purpose
                       </p>
+                      <div className="relative mt-1">
+                        <span className="text-sm font-medium text-(--color-text)">
+                          {purpose === 'RENT' ? 'Rent' : 'Buy'}
+                        </span>
 
-                      <button
-                        type="button"
-                        className="mt-1 flex items-center gap-1 text-sm font-medium text-(--color-text)"
-                      >
-                        Buy
-                        <ChevronDown size={14} />
-                      </button>
+                        <select
+                          value={purpose}
+                          onChange={(event) =>
+                            setPurpose(event.target.value as PropertyPurpose)
+                          }
+                          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                          aria-label="Property purpose"
+                        >
+                          <option value="SALE">Buy</option>
+                          <option value="RENT">Rent</option>
+                        </select>
+
+                        <ChevronDown
+                          size={14}
+                          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -124,13 +196,38 @@ const Hero = ({ property }: HeroProps) => {
                         Property
                       </p>
 
-                      <button
-                        type="button"
-                        className="mt-1 flex items-center gap-1 text-sm font-medium text-(--color-text)"
-                      >
-                        Any type
-                        <ChevronDown size={14} />
-                      </button>
+                      <div className="relative mt-1">
+                        <span className="text-sm font-medium text-(--color-text)">
+                          {propertyTypeLabel}
+                        </span>
+
+                        <select
+                          value={propertyType}
+                          onChange={(event) =>
+                            setPropertyType(
+                              event.target.value as PropertyType | '',
+                            )
+                          }
+                          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                          aria-label="Property type"
+                        >
+                          <option value="">Any type</option>
+                          <option value="APARTMENT">Apartment</option>
+                          <option value="HOUSE">House</option>
+                          <option value="DUPLEX">Duplex</option>
+                          <option value="VILLA">Villa</option>
+                          <option value="LAND">Land</option>
+                          <option value="OFFICE">Office</option>
+                          <option value="SHOP">Shop</option>
+                          <option value="WAREHOUSE">Warehouse</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+
+                        <ChevronDown
+                          size={14}
+                          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -145,13 +242,68 @@ const Hero = ({ property }: HeroProps) => {
                         Price
                       </p>
 
-                      <button
-                        type="button"
-                        className="mt-1 flex items-center gap-1 text-sm font-medium text-(--color-text)"
-                      >
-                        Any price
-                        <ChevronDown size={14} />
-                      </button>
+                      <div className="relative mt-1">
+                        <span className="text-sm font-medium text-(--color-text)">
+                          {priceLabel}
+                        </span>
+
+                        <select
+                          value={
+                            minPrice === undefined && maxPrice === undefined
+                              ? ''
+                              : minPrice === undefined
+                                ? 'under50'
+                                : minPrice === 50_000_000 &&
+                                  maxPrice === 100_000_000
+                                  ? '50to100'
+                                  : minPrice === 100_000_000 &&
+                                    maxPrice === 250_000_000
+                                    ? '100to250'
+                                    : '250plus'
+                          }
+                          onChange={(event) => {
+                            const value = event.target.value;
+
+                            if (value === '') {
+                              setMinPrice(undefined);
+                              setMaxPrice(undefined);
+                            }
+
+                            if (value === 'under50') {
+                              setMinPrice(undefined);
+                              setMaxPrice(50_000_000);
+                            }
+
+                            if (value === '50to100') {
+                              setMinPrice(50_000_000);
+                              setMaxPrice(100_000_000);
+                            }
+
+                            if (value === '100to250') {
+                              setMinPrice(100_000_000);
+                              setMaxPrice(250_000_000);
+                            }
+
+                            if (value === '250plus') {
+                              setMinPrice(250_000_000);
+                              setMaxPrice(undefined);
+                            }
+                          }}
+                          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                          aria-label="Price range"
+                        >
+                          <option value="">Any price</option>
+                          <option value="under50">Under ₦50M</option>
+                          <option value="50to100">₦50M – ₦100M</option>
+                          <option value="100to250">₦100M – ₦250M</option>
+                          <option value="250plus">₦250M+</option>
+                        </select>
+
+                        <ChevronDown
+                          size={14}
+                          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -159,6 +311,7 @@ const Hero = ({ property }: HeroProps) => {
                   <div className="col-span-2 p-2 lg:col-span-1">
                     <Button
                       size="lg"
+                      onClick={handleSearch}
                       className="h-[52px] w-full rounded-xl px-7 lg:h-full lg:min-w-[120px]"
                     >
                       <Search size={19} />
