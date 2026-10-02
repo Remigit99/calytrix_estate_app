@@ -1,5 +1,6 @@
 import { api } from '../../lib/api/api';
 import type {
+  PropertyAvailability,
   PropertyListResponse,
   PropertyPurpose,
   PropertyType,
@@ -17,6 +18,7 @@ export type GetPropertiesParams = {
   maxPrice?: number;
   bedrooms?: number;
   bathrooms?: number;
+  availability?: PropertyAvailability
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 };
@@ -28,7 +30,7 @@ export const propertyApi = api.injectEndpoints({
     >({
       query: (params) => ({
         url: '/properties',
-        params,
+        params: params ?? undefined,
       }),
       providesTags: (result) =>
         result
@@ -41,9 +43,18 @@ export const propertyApi = api.injectEndpoints({
             ]
           : [{ type: 'Property' as const, id: 'LIST' }],
     }),
+
+        getPropertyById: builder.query<Property, string>({
+      query: (id) => `/properties/${id}`,
+
+      providesTags: (_result, _error, id) => [
+        { type: 'Property', id },
+      ],
+    }),
   }),
 });
 
 export const {
   useGetPropertiesQuery,
+  useGetPropertyByIdQuery
 } = propertyApi;
