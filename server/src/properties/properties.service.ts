@@ -584,4 +584,19 @@ export class PropertiesService {
       },
     });
   }
+
+  async findManageableById(id: string, actorId: string, actorRole: Role) {
+    const property = await this.prisma.property.findUnique({
+      where: { id },
+      include: this.propertyInclude,
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    this.assertCanManage(property.agentId, actorId, actorRole);
+
+    return property;
+  }
 }

@@ -8,9 +8,4 @@ import { PropertiesService } from './properties.service';
   exports: [PropertiesService],
 })
 
-// {
-//   agent: 'agent@calytrix.test',
-//   admin: 'admin@calytrix.test',
-//   user: 'user@calytrix.test'
-// }
 export class PropertiesModule {}

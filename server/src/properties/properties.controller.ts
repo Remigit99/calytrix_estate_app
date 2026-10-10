@@ -126,4 +126,18 @@ export class PropertiesController {
   ) {
     return this.propertiesService.deleteImage(id, imageId, user.id, user.role);
   }
+
+  @Get(':id/manage')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.AGENT, Role.ADMIN)
+findManageable(
+  @Param('id') id: string,
+  @CurrentUser() user: JwtUser,
+) {
+  return this.propertiesService.findManageableById(
+    id,
+    user.id,
+    user.role,
+  );
+}
 }
