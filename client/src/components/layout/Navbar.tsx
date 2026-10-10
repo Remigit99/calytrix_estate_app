@@ -1,98 +1,124 @@
-import {
-  Heart,
-  Menu,
-  UserRound,
-  X,
-} from 'lucide-react';
-import { useState } from 'react';
-import {
-  Link,
-  useLocation,
-} from 'react-router';
 
+import { useState } from 'react';
+import { Heart, LogOut, Menu, UserRound, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router';
+
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useLogoutMutation } from '../../features/auth/authApi';
+import { clearSession } from '../../features/auth/authSlice';
 import { Container } from '../ui';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] =
-    useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  // The homepage hero uses the transparent/white navbar.
-  // Inner pages use a solid navbar.
+  const user = useAppSelector((state) => state.auth.user);
+  const accessToken = useAppSelector((state) => state.auth.accessToken);
+
+  const [logout] = useLogoutMutation();
+
   const isHomePage = pathname === '/';
+  const isAuthenticated = Boolean(accessToken);
+
+  const displayName =
+    user?.firstName ||
+    user?.email?.split('@')[0] ||
+    'Account';
+
+  const role = user?.role;
 
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
 
-  const linkClass = isHomePage
-    ? 'text-white/75 hover:text-white'
-    : 'text-slate-600 hover:text-slate-950';
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+    } catch {
+      // Clear the local session even if the server logout fails.
+    } finally {
+      dispatch(clearSession());
+      closeMenu();
+      navigate('/');
+    }
+  };
+
+  const linkClass = [
+    'text-sm font-medium transition',
+    isHomePage
+      ? 'text-white/85 hover:text-white'
+      : 'text-slate-600 hover:text-slate-950',
+  ].join(' ');
+
+  const actionClass = [
+    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition',
+    isHomePage
+      ? 'text-white hover:bg-white/10'
+      : 'text-slate-700 hover:bg-slate-100',
+  ].join(' ');
+
+  const mobileLinkClass = [
+    'flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition',
+    isHomePage
+      ? 'text-white/90 hover:bg-white/10 hover:text-white'
+      : 'text-slate-700 hover:bg-slate-100',
+  ].join(' ');
 
   return (
     <header
-      className={
+      className={[
+        'z-50 w-full',
         isHomePage
-          ? 'absolute inset-x-0 top-0 z-50'
-          : 'relative z-50 border-b border-slate-200 bg-white'
-      }
+          ? 'absolute left-0 top-0'
+          : 'relative border-b border-slate-200 bg-white',
+      ].join(' ')}
     >
       <Container>
-        <nav
-          className={[
-            'relative flex h-20 items-center justify-between',
-            isHomePage
-              ? 'border-b border-white/15'
-              : '',
-          ].join(' ')}
-        >
-          {/* Brand */}
+        <div className="flex h-20 items-center justify-between">
+          {/* Logo */}
           <Link
             to="/"
             onClick={closeMenu}
-            className={[
-              'relative z-10 text-xl font-semibold tracking-[-0.03em]',
-              isHomePage
-                ? 'text-white'
-                : 'text-slate-950',
-            ].join(' ')}
+            className="flex items-center gap-2.5"
           >
-            Calytrix
-            <span
-              className={
+            <div
+              className={[
+                'flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold',
                 isHomePage
-                  ? 'ml-1 font-normal text-white/60'
-                  : 'ml-1 font-normal text-slate-400'
-              }
+                  ? 'bg-white text-slate-950'
+                  : 'bg-slate-950 text-white',
+              ].join(' ')}
             >
-              Estate
+              C
+            </div>
+
+            <span
+              className={[
+                'text-lg font-semibold tracking-tight',
+                isHomePage ? 'text-white' : 'text-slate-950',
+              ].join(' ')}
+            >
+              Calytrix
             </span>
           </Link>
 
           {/* Desktop navigation */}
-          <div className="hidden items-center gap-8 lg:flex">
-            <Link
-              to="/properties"
-              className={`text-sm font-medium transition-colors ${linkClass}`}
-            >
+          <nav className="hidden items-center gap-8 lg:flex">
+            <Link to="/properties" className={linkClass}>
               Properties
             </Link>
 
-            <Link
-              to="/properties"
-              className={`text-sm font-medium transition-colors ${linkClass}`}
-            >
+            <Link to="/properties" className={linkClass}>
               Discover
             </Link>
 
-            <Link
-              to="/agents"
-              className={`text-sm font-medium transition-colors ${linkClass}`}
-            >
+            <Link to="/agents" className={linkClass}>
               Agents
             </Link>
-          </div>
+          </nav>
 
           {/* Desktop actions */}
           <div className="hidden items-center gap-2 lg:flex">
@@ -100,190 +126,245 @@ const Navbar = () => {
               to="/favorites"
               aria-label="Favorites"
               className={[
-                'flex size-10 items-center justify-center rounded-full transition-colors',
+                'flex h-10 w-10 items-center justify-center rounded-full transition',
                 isHomePage
-                  ? 'text-white/75 hover:bg-white/10 hover:text-white'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950',
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-slate-700 hover:bg-slate-100',
               ].join(' ')}
             >
-              <Heart
-                size={19}
-                strokeWidth={1.8}
-              />
+              <Heart className="h-4.5 w-4.5" />
             </Link>
 
-            <Link
-              to="/login"
-              className={[
-                'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                isHomePage
-                  ? 'text-white/80 hover:bg-white/10 hover:text-white'
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950',
-              ].join(' ')}
-            >
-              <UserRound
-                size={17}
-                strokeWidth={1.8}
-              />
-              Sign in
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  to="/login"
+                  className={actionClass}
+                >
+                  <UserRound className="h-4 w-4" />
+                  Sign in
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* USER */}
+                {role === 'USER' && (
+                  <Link
+                    to="/profile"
+                    className={actionClass}
+                  >
+                    <UserRound className="h-4 w-4" />
+                    {displayName}
+                  </Link>
+                )}
 
-            <Link
-              to="/properties/new"
-              className={[
-                'ml-1 inline-flex h-10 items-center rounded-full px-5 text-sm font-medium transition-all duration-200',
-                isHomePage
-                  ? 'border border-white/35 bg-white/10 text-white backdrop-blur-md hover:border-white/60 hover:bg-white/20'
-                  : 'bg-slate-950 text-white hover:bg-slate-800',
-              ].join(' ')}
-            >
-              List a property
-            </Link>
+                {/* AGENT */}
+                {role === 'AGENT' && (
+                  <Link
+                    to="/agent"
+                    className={actionClass}
+                  >
+                    <UserRound className="h-4 w-4" />
+                    Agent Dashboard
+                  </Link>
+                )}
+
+                {/* ADMIN */}
+                {role === 'ADMIN' && (
+                  <Link
+                    to="/admin"
+                    className={actionClass}
+                  >
+                    <UserRound className="h-4 w-4" />
+                    Admin Dashboard
+                  </Link>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  aria-label="Log out"
+                  className={[
+                    'flex h-10 w-10 items-center justify-center rounded-full transition',
+                    isHomePage
+                      ? 'text-white hover:bg-white/10'
+                      : 'text-slate-700 hover:bg-slate-100',
+                  ].join(' ')}
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </>
+            )}
+
+            {/* Only agents can create listings */}
+            {role === 'AGENT' && (
+              <Link
+                to="/properties/new"
+                className={[
+                  'ml-1 rounded-full px-5 py-2.5 text-sm font-semibold transition',
+                  isHomePage
+                    ? 'bg-white text-slate-950 hover:bg-white/90'
+                    : 'bg-slate-950 text-white hover:bg-slate-800',
+                ].join(' ')}
+              >
+                List a property
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
           <button
             type="button"
-            aria-label={
-              isMenuOpen
-                ? 'Close menu'
-                : 'Open menu'
-            }
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMenuOpen}
-            onClick={() =>
-              setIsMenuOpen((open) => !open)
-            }
+            onClick={() => setIsMenuOpen((open) => !open)}
             className={[
-              'relative z-10 flex size-10 items-center justify-center rounded-full transition-colors lg:hidden',
+              'flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur lg:hidden',
               isHomePage
-                ? 'border border-white/25 bg-black/10 text-white backdrop-blur-md hover:bg-white/15'
-                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+                ? 'border-white/20 bg-black/20 text-white'
+                : 'border-slate-200 bg-white text-slate-700',
             ].join(' ')}
           >
             {isMenuOpen ? (
-              <X
-                size={21}
-                strokeWidth={1.8}
-              />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu
-                size={21}
-                strokeWidth={1.8}
-              />
+              <Menu className="h-5 w-5" />
             )}
           </button>
+        </div>
 
-          {/* Mobile menu */}
-          {isMenuOpen && (
-            <div
-              className={[
-                'absolute inset-x-0 top-[calc(100%+0.5rem)] overflow-hidden rounded-2xl border p-2 shadow-xl lg:hidden',
-                isHomePage
-                  ? 'border-white/20 bg-black/80 backdrop-blur-xl'
-                  : 'border-slate-200 bg-white',
-              ].join(' ')}
-            >
-              <div className="flex flex-col">
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div
+            className={[
+              'absolute inset-x-0 top-[calc(100%+0.5rem)] overflow-hidden rounded-2xl border p-2 shadow-xl lg:hidden',
+              isHomePage
+                ? 'border-white/20 bg-black/80 backdrop-blur-xl'
+                : 'border-slate-200 bg-white',
+            ].join(' ')}
+          >
+            <nav className="space-y-1">
+              <Link
+                to="/properties"
+                onClick={closeMenu}
+                className={mobileLinkClass}
+              >
+                Properties
+              </Link>
+
+              <Link
+                to="/properties"
+                onClick={closeMenu}
+                className={mobileLinkClass}
+              >
+                Discover
+              </Link>
+
+              <Link
+                to="/agents"
+                onClick={closeMenu}
+                className={mobileLinkClass}
+              >
+                Agents
+              </Link>
+
+              <Link
+                to="/favorites"
+                onClick={closeMenu}
+                className={mobileLinkClass}
+              >
+                <Heart className="mr-2.5 h-4 w-4" />
+                Favorites
+              </Link>
+
+              {isAuthenticated && role === 'USER' && (
                 <Link
-                  to="/properties"
+                  to="/profile"
                   onClick={closeMenu}
-                  className={[
-                    'rounded-xl px-4 py-3.5 text-sm font-medium transition-colors',
-                    isHomePage
-                      ? 'text-white/85 hover:bg-white/10 hover:text-white'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950',
-                  ].join(' ')}
+                  className={mobileLinkClass}
                 >
-                  Properties
+                  <UserRound className="mr-2.5 h-4 w-4" />
+                  {displayName}
                 </Link>
+              )}
 
+              {isAuthenticated && role === 'AGENT' && (
                 <Link
-                  to="/properties"
+                  to="/agent"
                   onClick={closeMenu}
-                  className={[
-                    'rounded-xl px-4 py-3.5 text-sm font-medium transition-colors',
-                    isHomePage
-                      ? 'text-white/85 hover:bg-white/10 hover:text-white'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950',
-                  ].join(' ')}
+                  className={mobileLinkClass}
                 >
-                  Discover
+                  <UserRound className="mr-2.5 h-4 w-4" />
+                  Agent Dashboard
                 </Link>
+              )}
 
+              {isAuthenticated && role === 'ADMIN' && (
                 <Link
-                  to="/agents"
+                  to="/admin"
                   onClick={closeMenu}
-                  className={[
-                    'rounded-xl px-4 py-3.5 text-sm font-medium transition-colors',
-                    isHomePage
-                      ? 'text-white/85 hover:bg-white/10 hover:text-white'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950',
-                  ].join(' ')}
+                  className={mobileLinkClass}
                 >
-                  Agents
+                  <UserRound className="mr-2.5 h-4 w-4" />
+                  Admin Dashboard
                 </Link>
+              )}
 
-                <Link
-                  to="/favorites"
-                  onClick={closeMenu}
-                  className={[
-                    'flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-colors',
-                    isHomePage
-                      ? 'text-white/85 hover:bg-white/10 hover:text-white'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950',
-                  ].join(' ')}
-                >
-                  <Heart
-                    size={17}
-                    strokeWidth={1.8}
-                  />
-                  Favorites
-                </Link>
-
+              {!isAuthenticated ? (
                 <Link
                   to="/login"
                   onClick={closeMenu}
-                  className={[
-                    'flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-colors',
-                    isHomePage
-                      ? 'text-white/85 hover:bg-white/10 hover:text-white'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950',
-                  ].join(' ')}
+                  className={mobileLinkClass}
                 >
-                  <UserRound
-                    size={17}
-                    strokeWidth={1.8}
-                  />
+                  <UserRound className="mr-2.5 h-4 w-4" />
                   Sign in
                 </Link>
-
-                <div
-                  className={
-                    isHomePage
-                      ? 'my-2 border-t border-white/10'
-                      : 'my-2 border-t border-slate-100'
-                  }
-                />
-
-                <Link
-                  to="/properties/new"
-                  onClick={closeMenu}
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
                   className={[
-                    'flex h-11 items-center justify-center rounded-xl text-sm font-medium transition-colors',
-                    isHomePage
-                      ? 'border border-white/25 bg-white/10 text-white hover:bg-white/20'
-                      : 'bg-slate-950 text-white hover:bg-slate-800',
+                    mobileLinkClass,
+                    'w-full text-left',
                   ].join(' ')}
                 >
-                  List a property
-                </Link>
-              </div>
-            </div>
-          )}
-        </nav>
+                  <LogOut className="mr-2.5 h-4 w-4" />
+                  Log out
+                </button>
+              )}
+
+              {role === 'AGENT' && (
+                <>
+                  <div
+                    className={[
+                      'my-2 border-t',
+                      isHomePage
+                        ? 'border-white/10'
+                        : 'border-slate-200',
+                    ].join(' ')}
+                  />
+
+                  <Link
+                    to="/properties/new"
+                    onClick={closeMenu}
+                    className={[
+                      'flex items-center justify-center rounded-xl px-3 py-2.5 text-sm font-semibold transition',
+                      isHomePage
+                        ? 'bg-white text-slate-950 hover:bg-white/90'
+                        : 'bg-slate-950 text-white hover:bg-slate-800',
+                    ].join(' ')}
+                  >
+                    List a property
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
       </Container>
     </header>
   );
 };
 
 export default Navbar;
+

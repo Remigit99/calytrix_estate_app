@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import type { Property } from './propertyTypes';
+import { usePropertyFavorite } from '../favorites/usePropertyFavorite';
 import { Link } from 'react-router';
 
 type PropertyCardProps = {
@@ -34,6 +35,12 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   const primaryImage =
     property.images.find((image) => image.isPrimary) ??
     property.images[0];
+
+    const {
+  isFavorite,
+  toggleFavorite,
+  isLoading: isFavoriteLoading,
+} = usePropertyFavorite(property.id);
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50">

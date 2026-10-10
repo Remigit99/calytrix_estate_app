@@ -11,6 +11,7 @@ import {
 import { Link, useParams } from 'react-router';
 
 import { useGetPropertyByIdQuery } from '../../features/properties/propertiesApi';
+import { usePropertyFavorite } from '../../features/favorites/usePropertyFavorite';
 import EstateLoader from '../../components/ui/EstateLoader';
 
 const formatPrice = (
@@ -47,6 +48,12 @@ const PropertyDetailsPage = () => {
   } = useGetPropertyByIdQuery(id!, {
     skip: !id,
   });
+
+  const {
+  isFavorite,
+  toggleFavorite,
+  isLoading: isFavoriteLoading,
+} = usePropertyFavorite(id ?? '');
 
   if (isLoading) {
     return <EstateLoader />;
@@ -333,13 +340,37 @@ const PropertyDetailsPage = () => {
                   Contact agent
                 </button>
 
-                <button
+                {/* <button
                   type="button"
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                 >
                   <Heart className="h-4 w-4" />
                   Save property
-                </button>
+                </button> */}
+
+                <button
+  type="button"
+  disabled={isFavoriteLoading}
+  onClick={toggleFavorite}
+  className={[
+    'flex w-full items-center justify-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-semibold transition',
+    isFavorite
+      ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+      : 'border-slate-200 text-slate-800 hover:bg-slate-50',
+    isFavoriteLoading
+      ? 'cursor-not-allowed opacity-60'
+      : '',
+  ].join(' ')}
+>
+  <Heart
+    className="h-4 w-4"
+    fill={isFavorite ? 'currentColor' : 'none'}
+  />
+
+  {isFavorite
+    ? 'Saved property'
+    : 'Save property'}
+</button>
 
                 <button
                   type="button"

@@ -4,6 +4,8 @@ import type {
   PropertyListResponse,
   PropertyPurpose,
   PropertyType,
+  CreatePropertyPayload,
+  Property
 } from './propertyTypes';
 
 export type GetPropertiesParams = {
@@ -44,17 +46,30 @@ export const propertyApi = api.injectEndpoints({
           : [{ type: 'Property' as const, id: 'LIST' }],
     }),
 
-        getPropertyById: builder.query<Property, string>({
+   getPropertyById: builder.query<Property, string>({
       query: (id) => `/properties/${id}`,
 
       providesTags: (_result, _error, id) => [
         { type: 'Property', id },
       ],
     }),
+
+    createProperty: builder.mutation<
+  Property,
+  CreatePropertyPayload
+>({
+  query: (body) => ({
+    url: '/properties',
+    method: 'POST',
+    body,
+  }),
+  invalidatesTags: [{ type: 'Property', id: 'LIST' }],
+}),
   }),
 });
 
 export const {
   useGetPropertiesQuery,
-  useGetPropertyByIdQuery
+  useGetPropertyByIdQuery,
+  useCreatePropertyMutation
 } = propertyApi;

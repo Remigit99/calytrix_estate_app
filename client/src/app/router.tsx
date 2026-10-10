@@ -7,6 +7,8 @@ import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import PropertiesPage from '../pages/public/PropertiesPage';
 import PropertyDetailsPage from '../pages/public/PropertyDetailsPage';
+import FavoritesPage from '../pages/user/FavoritesPage';
+import CreatePropertyPage from '../pages/agent/CreatePropertyPage';
 
 const router = createBrowserRouter([
  {
@@ -24,6 +26,10 @@ const router = createBrowserRouter([
       path: '/properties/:id',
       element: <PropertyDetailsPage />,
     },
+    {
+      path: '/favorites',
+      element: <FavoritesPage />,
+    },
 
     ],
   },
@@ -34,6 +40,10 @@ const router = createBrowserRouter([
 {
   path: '/register',
   element: <RegisterPage />,
+},
+{
+  path: '/properties/new',
+  element: <CreatePropertyPage />,
 },
   {
     path: '*',

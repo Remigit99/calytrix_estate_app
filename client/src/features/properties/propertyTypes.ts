@@ -76,3 +76,5 @@ export type PropertyListResponse = {
   data: Property[];
   meta: PropertyListMeta;
 };
+
+export type CreatePropertyImagePayload = { url: string; altText?: string; position?: number; isPrimary?: boolean; }; export type CreatePropertyPayload = { title: string; description: string; price: string; purpose: Purpose; propertyType: PropertyType; availability?: Availability; bedrooms?: number; bathrooms?: number; parkingSpaces?: number; address: string; city: string; state: string; country: string; latitude?: string; longitude?: string; images?: CreatePropertyImagePayload[]; };
