@@ -128,16 +128,9 @@ export class PropertiesController {
   }
 
   @Get(':id/manage')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.AGENT, Role.ADMIN)
-findManageable(
-  @Param('id') id: string,
-  @CurrentUser() user: JwtUser,
-) {
-  return this.propertiesService.findManageableById(
-    id,
-    user.id,
-    user.role,
-  );
-}
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.AGENT, Role.ADMIN)
+  findManageable(@Param('id') id: string, @CurrentUser() user: JwtUser) {
+    return this.propertiesService.findManageableById(id, user.id, user.role);
+  }
 }

@@ -1,12 +1,12 @@
-import { api } from '../../lib/api/api';
+import { api } from "../../lib/api/api";
 import type {
   PropertyAvailability,
   PropertyListResponse,
   PropertyPurpose,
   PropertyType,
   CreatePropertyPayload,
-  Property
-} from './propertyTypes';
+  Property,
+} from "./propertyTypes";
 
 export type GetPropertiesParams = {
   page?: number;
@@ -20,9 +20,9 @@ export type GetPropertiesParams = {
   maxPrice?: number;
   bedrooms?: number;
   bathrooms?: number;
-  availability?: PropertyAvailability
+  availability?: PropertyAvailability;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 };
 export const propertyApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -31,45 +31,46 @@ export const propertyApi = api.injectEndpoints({
       GetPropertiesParams | void
     >({
       query: (params) => ({
-        url: '/properties',
+        url: "/properties",
         params: params ?? undefined,
       }),
       providesTags: (result) =>
         result
           ? [
               ...result.data.map((property) => ({
-                type: 'Property' as const,
+                type: "Property" as const,
                 id: property.id,
               })),
-              { type: 'Property' as const, id: 'LIST' },
+              { type: "Property" as const, id: "LIST" },
             ]
-          : [{ type: 'Property' as const, id: 'LIST' }],
+          : [{ type: "Property" as const, id: "LIST" }],
     }),
 
-   getPropertyById: builder.query<Property, string>({
+    getPropertyById: builder.query<Property, string>({
       query: (id) => `/properties/${id}`,
 
-      providesTags: (_result, _error, id) => [
-        { type: 'Property', id },
-      ],
+      providesTags: (_result, _error, id) => [{ type: "Property", id }],
     }),
 
-    createProperty: builder.mutation<
-  Property,
-  CreatePropertyPayload
->({
-  query: (body) => ({
-    url: '/properties',
-    method: 'POST',
-    body,
-  }),
-  invalidatesTags: [{ type: 'Property', id: 'LIST' }],
-}),
+    createProperty: builder.mutation<Property, CreatePropertyPayload>({
+      query: (body) => ({
+        url: "/properties",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Property", id: "LIST" }],
+    }),
+
+    getManageablePropertyById: builder.query<Property, string>({
+      query: (id) => `/properties/${id}/manage`,
+      providesTags: (_result, _error, id) => [{ type: "Property", id }],
+    }),
   }),
 });
 
 export const {
   useGetPropertiesQuery,
   useGetPropertyByIdQuery,
-  useCreatePropertyMutation
+  useCreatePropertyMutation,
+  useGetManageablePropertyByIdQuery,
 } = propertyApi;

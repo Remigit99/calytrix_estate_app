@@ -11,7 +11,7 @@ import FavoritesPage from '../pages/user/FavoritesPage';
 import CreatePropertyPage from '../pages/agent/CreatePropertyPage';
 
 const router = createBrowserRouter([
- {
+  {
     element: <PublicLayout />,
     children: [
       {
@@ -20,31 +20,35 @@ const router = createBrowserRouter([
       },
       {
         path: '/properties',
-        element: <PropertiesPage/>
+        element: <PropertiesPage />
       },
-         {
-      path: '/properties/:id',
-      element: <PropertyDetailsPage />,
-    },
-    {
-      path: '/favorites',
-      element: <FavoritesPage />,
-    },
+      {
+        path: '/properties/:id',
+        element: <PropertyDetailsPage />,
+      },
+      {
+        path: '/properties/:id/manage',
+        element: <PropertyDetailsPage />,
+      },
+      {
+        path: '/favorites',
+        element: <FavoritesPage />,
+      },
 
     ],
   },
-        {
-  path: '/login',
-  element: <LoginPage />,
-},
-{
-  path: '/register',
-  element: <RegisterPage />,
-},
-{
-  path: '/properties/new',
-  element: <CreatePropertyPage />,
-},
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />,
+  },
+  {
+    path: '/properties/new',
+    element: <CreatePropertyPage />,
+  },
   {
     path: '*',
     element: <Navigate to="/" replace />,

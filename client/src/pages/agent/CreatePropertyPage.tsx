@@ -103,9 +103,9 @@ const CreatePropertyPage = () => {
       current.map((image, imageIndex) =>
         imageIndex === index
           ? {
-              ...image,
-              [field]: value,
-            }
+            ...image,
+            [field]: value,
+          }
           : image,
       ),
     );
@@ -158,10 +158,12 @@ const CreatePropertyPage = () => {
           : {}),
       }).unwrap();
 
-    if (!property?.id) {
-      throw new Error('The API did not return a property ID.');
-    }
-      navigate(`/properties/${property.id}`);
+      if (!property?.id) {
+        throw new Error('The API did not return a property ID.');
+      }
+
+      navigate(`/properties/${property.id}/manage`);
+
     } catch (requestError: any) {
       const message =
         requestError?.data?.message ||

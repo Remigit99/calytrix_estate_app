@@ -8,9 +8,12 @@ import {
   Phone,
   Share2,
 } from 'lucide-react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useLocation } from 'react-router';
 
-import { useGetPropertyByIdQuery } from '../../features/properties/propertiesApi';
+import {
+  useGetPropertyByIdQuery,
+  useGetManageablePropertyByIdQuery
+} from '../../features/properties/propertiesApi';
 import { usePropertyFavorite } from '../../features/favorites/usePropertyFavorite';
 import EstateLoader from '../../components/ui/EstateLoader';
 
@@ -39,21 +42,38 @@ const formatPropertyType = (type: string) =>
   type.charAt(0) + type.slice(1).toLowerCase();
 
 const PropertyDetailsPage = () => {
-  const { id } = useParams();
 
-  const {
-    data: property,
-    isLoading,
-    isError,
-  } = useGetPropertyByIdQuery(id!, {
-    skip: !id,
+  const { id } = useParams();
+  const location = useLocation();
+
+  const isManageRoute = location.pathname.endsWith('/manage');
+
+  const publicQuery = useGetPropertyByIdQuery(id ?? '', {
+    skip: !id || isManageRoute,
   });
 
+  const manageQuery = useGetManageablePropertyByIdQuery(id ?? '', {
+    skip: !id || !isManageRoute,
+  });
+
+  const property = isManageRoute
+    ? manageQuery.data
+    : publicQuery.data;
+
+  const isLoading = isManageRoute
+    ? manageQuery.isLoading
+    : publicQuery.isLoading;
+
+  const isError = isManageRoute
+    ? manageQuery.isError
+    : publicQuery.isError;
+
+
   const {
-  isFavorite,
-  toggleFavorite,
-  isLoading: isFavoriteLoading,
-} = usePropertyFavorite(id ?? '');
+    isFavorite,
+    toggleFavorite,
+    isLoading: isFavoriteLoading,
+  } = usePropertyFavorite(id ?? '');
 
   if (isLoading) {
     return <EstateLoader />;
@@ -349,28 +369,28 @@ const PropertyDetailsPage = () => {
                 </button> */}
 
                 <button
-  type="button"
-  disabled={isFavoriteLoading}
-  onClick={toggleFavorite}
-  className={[
-    'flex w-full items-center justify-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-semibold transition',
-    isFavorite
-      ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-      : 'border-slate-200 text-slate-800 hover:bg-slate-50',
-    isFavoriteLoading
-      ? 'cursor-not-allowed opacity-60'
-      : '',
-  ].join(' ')}
->
-  <Heart
-    className="h-4 w-4"
-    fill={isFavorite ? 'currentColor' : 'none'}
-  />
+                  type="button"
+                  disabled={isFavoriteLoading}
+                  onClick={toggleFavorite}
+                  className={[
+                    'flex w-full items-center justify-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-semibold transition',
+                    isFavorite
+                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                      : 'border-slate-200 text-slate-800 hover:bg-slate-50',
+                    isFavoriteLoading
+                      ? 'cursor-not-allowed opacity-60'
+                      : '',
+                  ].join(' ')}
+                >
+                  <Heart
+                    className="h-4 w-4"
+                    fill={isFavorite ? 'currentColor' : 'none'}
+                  />
 
-  {isFavorite
-    ? 'Saved property'
-    : 'Save property'}
-</button>
+                  {isFavorite
+                    ? 'Saved property'
+                    : 'Save property'}
+                </button>
 
                 <button
                   type="button"
